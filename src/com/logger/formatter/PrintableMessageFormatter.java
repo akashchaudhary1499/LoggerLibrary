@@ -5,6 +5,7 @@ import com.logger.Message;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 public class PrintableMessageFormatter implements MessageFormatter<String> {
 
@@ -18,11 +19,15 @@ public class PrintableMessageFormatter implements MessageFormatter<String> {
     @Override
     public String format(final Message message) {
         final String formattedTimestamp = dateTimeFormatter.format(message.getTimeStamp());
+        final StringBuilder sb = new StringBuilder();
+        sb.append(formattedTimestamp).append(" : ").append("[").append(message.getLogLevel()).append("] : ");
 
-        return formattedTimestamp +
-                " : " +
-                "[" + message.getLogLevel() + "]" +
-                " : " + message.getNamespace() + " : " +
-                message.getContent();
+        for(Map.Entry<String, String> entry : message.getAdditionalContext().entrySet()) {
+            sb.append(entry.getKey()).append("=").append(entry.getValue()).append(" ");
+        }
+
+        sb.append(" : ").append(message.getContent());
+
+        return sb.toString();
     }
 }

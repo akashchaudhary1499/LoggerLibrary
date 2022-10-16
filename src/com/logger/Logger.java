@@ -18,8 +18,10 @@ public class Logger {
 
     private final Map<LogLevel, List<Sink>> sinksByLogLevel;
     private final SinkFactory sinkFactory;
+    private final LoggingContext loggingContext;
 
     private Logger(final List<SinkConfig> configs, final SinkFactory sinkFactory) {
+        this.loggingContext = new LoggingContext();
         this.sinksByLogLevel = new HashMap<>();
         for (final LogLevel logLevel : LogLevel.values()) {
             sinksByLogLevel.put(logLevel, new ArrayList<>());
@@ -56,10 +58,30 @@ public class Logger {
     }
 
     public void log(final String content, final LogLevel logLevel, final String namespace) {
-        final Message message = new Message(content, namespace, logLevel, Instant.now());
+        long threadId = Thread.currentThread().getId();
+        final Message message = new Message(content, namespace, logLevel, Instant.now(),
+                loggingContext.getLoggingContext(threadId));
         final List<Sink> sinks = sinksByLogLevel.get(logLevel);
         for (final Sink sink : sinks) {
             sink.processMessage(message);
         }
+    }
+
+    public void addGlobalContext(final String propertyName, final String propertyValue) {
+        loggingContext.setGlobalContext(propertyName, propertyValue);
+    }
+
+    public void removeGlobalContext(final String propertyName) {
+        loggingContext.removeGlobalContext(propertyName);
+    }
+
+    public void  addThreadContext(final String propertyName, final String propertyValue) {
+        final long threadId = Thread.currentThread().getId();
+        loggingContext.setThreadContext(threadId, propertyName, propertyValue);
+    }
+
+    public void removeThreadContext(final String propertyName) {
+        final long threadId = Thread.currentThread().getId();
+        loggingContext.removeThreadContext(threadId, propertyName);
     }
 }
