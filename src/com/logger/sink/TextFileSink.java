@@ -55,7 +55,7 @@ public class TextFileSink implements Sink {
             logWriter.write("\n");
             logWriter.flush();
         } catch (Exception ex) {
-            System.err.println("Error logging");
+            throw new RuntimeException("Failed to write to log file", ex);
         }
     }
 

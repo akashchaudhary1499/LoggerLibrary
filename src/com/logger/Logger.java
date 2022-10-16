@@ -58,12 +58,16 @@ public class Logger {
     }
 
     public void log(final String content, final LogLevel logLevel, final String namespace) {
-        long threadId = Thread.currentThread().getId();
-        final Message message = new Message(content, namespace, logLevel, Instant.now(),
-                loggingContext.getLoggingContext(threadId));
-        final List<Sink> sinks = sinksByLogLevel.get(logLevel);
-        for (final Sink sink : sinks) {
-            sink.processMessage(message);
+        try {
+            long threadId = Thread.currentThread().getId();
+            final Message message = new Message(content, namespace, logLevel, Instant.now(),
+                    loggingContext.getLoggingContext(threadId));
+            final List<Sink> sinks = sinksByLogLevel.get(logLevel);
+            for (final Sink sink : sinks) {
+                sink.processMessage(message);
+            }
+        } catch (Exception ex) {
+            System.err.println("Failed to log message. Reason=" + ex.getMessage());
         }
     }
 
